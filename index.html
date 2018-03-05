@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Cryptodivisas en Peso Chileno (CLP)</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+
+    <div class="row">
+        <div class="col-sm-10 offset-sm-1 text-center mt-3">
+            <h4 class="mb-2">Cryptodivisas en Peso Chileno (CLP)</h4>
+
+            <div class="col-md-4 offset-md-4 mt-2">
+                <form class="form-row formAdd" action="#">
+                    <div class="form-group col-8 mt-2">
+                        <input type="text" class="form-control" placeholder="Ingresa la moneda. Ej: XMR , ETH" name="crypto" id="crypto" required>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary col-4 mt-2 mb-3">Agregar Moneda</button>
+                </form>
+            </div>
+
+        </div>
+        <div class="col-10 offset-1 mt-4 text-center">
+            <div class="row resumen">
+
+            </div>
+            <p class="lead statusText">Obteniendo información ...</p>
+            <!--
+            <div class="card col-4 ">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <h5 class="card-title">ETH to CLP</h5>
+                            <p class="card-subtitle">Ethereum a Peso Chileno</p>
+                        </div>
+                        <div class="col-6">
+                            <h1>$456.251</h1>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+    <script>
+
+        var subscribe = Cookies.getJSON("subscribeCrypto");
+        var info = {};
+
+        $(document).ready(function(){
+             $(".formAdd").submit(function (e) {
+                e.preventDefault();
+                addCrypto();
+            });
+            getData();
+            setInterval(function(){
+                getData();
+            },10000);
+        });
+
+        function addCrypto () {
+            var c = $("#crypto").val();
+            if(subscribe === undefined || subscribe === null){
+                subscribe = [];
+            }
+
+            var next = false;
+            $.each(info,function (k,v) {
+                if(v.symbol == c){
+                    next = true;
+                }
+            });
+            if(!next){
+                $(".statusText").html("<span class='text-danger'>¡Moneda "+c+" no encontrada!</span>");
+                $(".statusText").fadeIn();
+                return;
+            }
+            if($.inArray(c, subscribe) === -1){
+                subscribe.push(c);
+                Cookies.set("subscribeCrypto",subscribe);
+                getData();
+            }
+
+        }
+
+        function deleteCard(v){
+            $(".statusText").html("Eliminando "+v+" de la lista");
+            subscribe.splice($.inArray(v,subscribe),1);
+            Cookies.set("subscribeCrypto",subscribe);
+            $(".cardcrypto-"+v).remove();
+        }
+
+        function getData(){
+            if(true){
+                $(".statusText").html("Actualizando ...");
+                $(".statusText").fadeIn();
+                $.ajax({
+                    url: "https://api.coinmarketcap.com/v1/ticker/?convert=CLP&limit=0",
+                    type: "GET",
+                    dataType: "json",
+                    data: {},
+                    success: function(data){
+                        info = data;
+                        $(".statusText").fadeOut("slow");
+                        $(".resumen").html("");
+                        $.each(data,function(k,v){
+                            if($.inArray(v.symbol, subscribe) !== -1){
+                                var card = $("<div>");
+                                card.addClass("cardcrypto-"+v.symbol);
+                                card.addClass("col-md-3 offset-md-1");
+                                card.addClass("card mb-4");
+                                var cardBody = $("<div>");
+                                cardBody.addClass('card-body');
+                                var row = $("<div class='row'></div>");
+                                row.append('<div class="col-6"><h5 class="card-title">'+v.symbol+' to CLP</h5><p class="card-subtitle">'+v.name+' a Peso Chileno</p></div>');
+                                row.append('<div class="col-6"><h3>$'+Math.round(v.price_clp).toLocaleString()+'</h3><button class="btn btn-link" onclick="deleteCard(\''+v.symbol+'\')">Eliminar</button></div>');
+                                cardBody.append(row);
+                                card.append(cardBody);
+
+                                $(".resumen").append(card);
+                            }
+                        })
+                    },
+                    error:{
+
+                    }
+                });
+            }
+
+        }
+    </script>
+</body>
+</html>
