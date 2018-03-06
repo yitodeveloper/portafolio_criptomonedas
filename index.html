@@ -11,6 +11,7 @@
     <META NAME="robots" content="index,follow">
     <META NAME="distribution" content="global">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="plugins/easyautocomplete/easy-autocomplete.min.css">
 </head>
 <body>
 
@@ -22,7 +23,7 @@
             <div class="col-md-6 offset-md-3 mt-2">
                 <form class="form-row formAdd" action="#">
                     <div class="form-group col-8 mt-2">
-                        <input type="text" class="form-control" placeholder="Ingresa la moneda. Ej: XMR , ETH" name="crypto" id="crypto" required>
+                        <input type="text" class="form-control" placeholder="Ingresa el nombre o simbolo de la moneda" name="crypto" id="crypto" required autofocus>
                     </div>
                     <button type="submit" class="btn btn-sm btn-primary col-4 mt-2 mb-3">Agregar Criptomoneda</button>
                 </form>
@@ -36,11 +37,12 @@
 
         </div>
         <div class="col-10 offset-1 col-sm-6 offset-sm-3 text-center">
-            <p class="lead statusText">Obteniendo información ...</p>
+
             <p>Esta herramienta se actualiza en tiempo real con una fuente de datos externa (<a href="https://coinmarketcap.com/">Coinmarketcap</a>).
                 No guardamos absolutamente ninguna información, toda la información que proporcionas
                 en el sitio se almacena en cookies del navegador. Si deseas aportar con una idea de mejora
-                para esta herramienta escribenos a <a href="mailto:hola@andeslogic.com">hola@andeslogic.com</a>.</p>
+                para esta herramienta escribenos a <a href="https://andeslogic.com/contactanos/">hola@andeslogic.com</a>.</p>
+            <p class="lead statusText">Obteniendo información ...</p>
 
         </div>
         <div class="modal fade" tabindex="-1" role="dialog">
@@ -55,7 +57,7 @@
                     <div class="modal-body">
                         <div class="col-12">
                             <div class="form-group">
-                                <input type="text" class="form-control" id="inputAmount" autofocus>
+                                <input type="text" class="form-control" id="inputAmount">
                             </div>
                         </div>
 
@@ -75,6 +77,7 @@
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115115774-1"></script>
+    <script src="plugins/easyautocomplete/jquery.easy-autocomplete.min.js"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}

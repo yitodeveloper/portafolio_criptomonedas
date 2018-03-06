@@ -1,6 +1,8 @@
 var subscribe = Cookies.getJSON("subscribeCrypto");
 var info = {};
 var tokenSelected = "";
+var tokenMap = [];
+var start = 0;
 
 $(document).ready(function(){
     $(".formAdd").submit(function (e) {
@@ -30,24 +32,71 @@ function addCrypto () {
         }
     });
     if(!next){
-        $(".statusText").html("<span class='text-danger'>¡Moneda "+c+" no encontrada!</span>");
-        $(".statusText").fadeIn();
-        return;
+        var cTemp = searchToken(c);
+        if( cTemp === false){
+            $(".statusText").html("<span class='text-danger'>¡Moneda "+c+" no encontrada!</span>").fadeIn();
+            return;
+        }
+        c= cTemp;
+
     }
+
+
     if($.inArray(c, subscribe) === -1){
         subscribe.push(c);
         Cookies.set("subscribeCrypto",subscribe);
-        getData();
+        drawCards();
+        $("#crypto").val("").focus();
     }
 
 }
 
+function searchToken(name){
+    name = name.toLowerCase();
+    symbol = false;
+    $.each(tokenMap,function(k,v){
+        if(v.name.toLowerCase() === name){
+            symbol = v.symbol;
+        }
+    });
+    return symbol;
+}
 function deleteCard(v){
     $(".statusText").html("Eliminando "+v+" de la lista");
     subscribe.splice($.inArray(v,subscribe),1);
     Cookies.set("subscribeCrypto",subscribe);
     $(".cardcrypto-"+v).remove();
     drawCards();
+}
+
+function setTokenMap(){
+    start = 1;
+    $.each(info,function(k,v){
+        var object = {};
+        object.id = v.id;
+        object.name = v.name;
+        object.symbol = v.symbol;
+        tokenMap.push(object);
+    });
+    var options = {
+        data: tokenMap,
+        getValue: "name",
+        list: {
+            match: {
+                enabled: true
+            },
+            sort: {
+                enabled: true
+            }
+        },
+        template: {
+            type: "custom",
+            method: function(k, v) {
+                return  v.name + " (" + v.symbol + ")";
+            }
+        }
+    };
+    $("#crypto").easyAutocomplete(options).focus();
 }
 
 function getData(){
@@ -62,6 +111,9 @@ function getData(){
             $(".statusText").fadeOut("slow");
 
             drawCards();
+            if(start === 0){
+                setTokenMap();
+            }
         },
         error:{
 
@@ -83,7 +135,7 @@ function drawCards(){
             cardBody.addClass('card-body');
             var row = $("<div class='row'></div>");
             row.append('<div class="col-4"><h5 class="card-title">'+v.symbol+' to CLP</h5><p class="card-subtitle">Mi '+v.name+' en Peso Chileno</p></div>');
-            row.append('<div class="col-8"><h2>$'+amount.toLocaleString()+'</h2><p title="Equivalente a un Ethereum">Valor CLP: $'+Math.round(v.price_clp).toLocaleString()+' <br> Cambio 24h: '+writeChange24(v.percent_change_24h)+'</p><div class="row"><div class="col-6"><button class="btn btn-danger btn-sm" onclick="deleteCard(\''+v.symbol+'\')">Eliminar</button></div><div class="col-6"><button class="btn btn-primary btn-sm" onclick="editAmount(\''+v.symbol+'\')" >Editar</button></div></div></div>');
+            row.append('<div class="col-8"><h2>$'+amount.toLocaleString()+'</h2><p title="Equivalente a un Ethereum">Valor CLP: $'+Math.round(v.price_clp).toLocaleString()+' <br> Cambio 24h: '+writeChange24(v.percent_change_24h)+'</p><div class="row"><div class="col-6"><button class="btn btn-danger btn-sm" onclick="deleteCard(\''+v.symbol+'\')">Eliminar</button></div><div class="col-6"><button class="btn btn-primary btn-sm" onclick="editAmount(\''+v.symbol+'\')" >Configurar</button></div></div></div>');
             cardBody.append(row);
             card.append(cardBody);
 
