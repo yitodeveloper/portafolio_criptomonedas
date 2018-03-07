@@ -15,7 +15,7 @@ $(document).ready(function(){
     getData();
     setInterval(function(){
         getData();
-    },10000);
+    },60000);
 });
 
 function addCrypto () {
