@@ -58,6 +58,9 @@ function searchToken(name){
         if(v.name.toLowerCase() === name){
             symbol = v.symbol;
         }
+        if(v.search.toLowerCase() === name.toLowerCase()){
+            symbol = v.symbol;
+        }
     });
     return symbol;
 }
@@ -76,11 +79,12 @@ function setTokenMap(){
         object.id = v.id;
         object.name = v.name;
         object.symbol = v.symbol;
+        object.search = v.name + " (" + v.symbol + ")";
         tokenMap.push(object);
     });
     var options = {
         data: tokenMap,
-        getValue: "name",
+        getValue: "search",
         list: {
             match: {
                 enabled: true
@@ -124,26 +128,39 @@ function getData(){
 function drawCards(){
     $(".resumen").html("");
     var total = 0;
+    var totalBtc = 0;
+    var totalUsd = 0;
     $.each(info,function(k,v){
         if($.inArray(v.symbol, subscribe) !== -1){
-            var amount = selfAmount(v.price_clp,v.symbol);
+            var amount = selfAmount(v.price_clp,v.symbol,true);
+            var amountUsd = selfAmount(v.price_usd,v.symbol,true);
+            var amountBtc = selfAmount(v.price_btc,v.symbol,false);
             total += amount;
-            var card = $("<div>");
+            totalUsd += amountUsd;
+            totalBtc += amountBtc;
+            var container = $('<div>');
+            container.addClass('col-12 col-sm-5 offset-sm-1 col-lg-3 mb-sm-4');
+            var card = $('<div>');
             card.addClass("cardcrypto-"+v.symbol);
-            card.addClass("card col-12 col-sm-5 offset-sm-1 col-lg-3 mb-4");
+            card.addClass("card");
+            var cardHeader = $("<div>");
+            cardHeader.addClass('card-header');
+            cardHeader.append(v.name+' a Peso Chileno');
             var cardBody = $("<div>");
             cardBody.addClass('card-body');
             var row = $("<div class='row'></div>");
-            row.append('<div class="col-4"><h5 class="card-title">'+v.symbol+' to CLP</h5><p class="card-subtitle">Mi '+v.name+' en Peso Chileno</p></div>');
-            row.append('<div class="col-8"><h2>$'+amount.toLocaleString()+'</h2><p title="Equivalente a un Ethereum">Valor CLP: $'+Math.round(v.price_clp).toLocaleString()+' <br> Cambio 24h: '+writeChange24(v.percent_change_24h)+'</p><div class="row"><div class="col-6"><button class="btn btn-danger btn-sm" onclick="deleteCard(\''+v.symbol+'\')">Eliminar</button></div><div class="col-6"><button class="btn btn-primary btn-sm" onclick="editAmount(\''+v.symbol+'\')" >Configurar</button></div></div></div>');
+            row.append('<div class="col-12"><p class="card-subtitle">Mis <strong>'+getAmount(v.symbol)+"</strong> "+v.symbol+' en CLP</p><h1 style="margin-bottom: 0px;line-height: 45px;">$'+amount.toLocaleString()+'</h1><p title="Precio del '+v.name+' en \n CLP: $'+v.price_clp.toLocaleString()+' \n BTC: '+v.price_btc.toLocaleString()+' \n USD: $'+v.price_usd.toLocaleString()+' "><span style="font-size: 14px;line-height: 10px;">Total en BTC : '+amountBtc.toLocaleString()+'<br> Total en USD : '+amountUsd.toLocaleString()+' <br></span> Cambio 24h: '+writeChange24(v.percent_change_24h)+'</p><div class="row"><div class="col-6"><button class="btn btn-danger btn-sm" onclick="deleteCard(\''+v.symbol+'\')">Eliminar</button></div><div class="col-6"><button class="btn btn-primary btn-sm" onclick="editAmount(\''+v.symbol+'\')" >Configurar</button></div></div></div>');
             cardBody.append(row);
+            card.append(cardHeader);
             card.append(cardBody);
+            container.append(card);
 
-            $(".resumen").append(card);
+            $(".resumen").append(container);
         }
     });
 
     $("#total").html("$"+total.toLocaleString());
+    $("#totalBTCUSD").html(totalBtc.toLocaleString()+" BTC - $"+totalUsd.toLocaleString()+" USD");
 }
 
 function editAmount(symbol){
@@ -170,7 +187,16 @@ function writeChange24(num){
     }
 }
 
-function selfAmount(value,symbol){
+function getAmount(symbol){
+    var amount =  Cookies.get("amount-"+symbol);
+    if(amount === undefined){
+        amount = 0;
+        Cookies.set("amount-"+symbol,0);
+    }
+    return amount;
+}
+
+function selfAmount(value,symbol,round){
     var amount =  Cookies.get("amount-"+symbol);
 
     if(amount === undefined){
@@ -179,7 +205,13 @@ function selfAmount(value,symbol){
     }
 
     if(amount !== 0){
-        return Math.round(amount*value);
+        if(round){
+            return Math.round(amount*value);
+
+        }else{
+            return amount*value;
+        }
+
     }else{
         return 0;
     }
